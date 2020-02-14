@@ -4,32 +4,39 @@
 
 import React, { useState } from "react";
 import {
-  AreaChart,
-  Area,
+  BarChart,
+  Bar,
   CartesianGrid,
   XAxis,
   YAxis,
-  Text,
   Tooltip,
   Legend
 } from "recharts";
 
+import Card from "./components/Card";
 import Header from "./components/Header";
 import TextBlock from "./components/TextBlock";
 import "./App.css";
 
+// chart data
+const data = [
+  { name: "A", val: 400 },
+  { name: "B", val: 350 },
+  { name: "C", val: 200 },
+  { name: "D", val: 225 },
+  { name: "E", val: 375 }
+];
+
 // read and process survey results
 let toolList = ["react", "angular", "vuejs", "jest", "reactnative"];
-// chart data
-let data = [
-  { name: "React", awareness: 100, interest: 60.8, satisfaction: 89.3 },
-  { name: "Vue", awareness: 99.6, interest: 64.3, satisfaction: 87.1 },
-  { name: "Angular", awareness: 99.8, interest: 23.1, satisfaction: 38 },
-  { name: "Jest", awareness: 91.5, interest: 81.6, satisfaction: 96.4 },
-  { name: "React Native", awareness: 98.5, interest: 67.8, satisfaction: 82.1 }
-];
-// areaChart
-let areaChart;
+let surveyResults = {
+  none: {
+    total: 0,
+    awareness: 0,
+    interest: 0,
+    satisfaction: 0
+  }
+};
 
 for (let i = 0; i < toolList.length; i++) {
   // build query
@@ -63,9 +70,9 @@ for (let i = 0; i < toolList.length; i++) {
   fetch(url, opts)
     .then(res => res.json())
     .then(resJSON => {
-      // extract required data
-      data.push({
-        name: resJSON.data.survey.tool.id,
+      // extract required data into surveyResults
+      surveyResults[resJSON.data.survey.tool.id] = {
+        total: resJSON.data.survey.tool.experience.allYears["3"].total,
         awareness:
           resJSON.data.survey.tool.experience.allYears["3"]
             .awarenessInterestSatisfaction.awareness,
@@ -75,12 +82,10 @@ for (let i = 0; i < toolList.length; i++) {
         satisfaction:
           resJSON.data.survey.tool.experience.allYears["3"]
             .awarenessInterestSatisfaction.satisfaction
-      });
+      };
     })
     .catch(console.error);
 } // -- end of read and process survey results --
-
-console.log(data);
 
 function App() {
   // responsive sizing
@@ -99,50 +104,72 @@ function App() {
     }
   };
 
+  // values displayed in cards
+  const [displayData, setdisplayData] = useState({
+    card1: {
+      tool: "none",
+      awareness: 0,
+      interest: 0,
+      satisfaction: 0,
+      total: 0
+    },
+    card2: {
+      tool: "none",
+      awareness: 0,
+      interest: 0,
+      satisfaction: 0,
+      total: 0
+    },
+    card3: {
+      tool: "none",
+      awareness: 0,
+      interest: 0,
+      satisfaction: 0,
+      total: 0
+    },
+    card4: {
+      tool: "none",
+      awareness: 0,
+      interest: 0,
+      satisfaction: 0,
+      total: 0
+    }
+  });
+
+  // change displayed values based on Picker choice
+  const changeDisplayHandler = newTool => {
+    for (let key in newTool) {
+      setdisplayData({
+        ...displayData,
+        [key]: {
+          tool: newTool[key],
+          awareness: surveyResults[newTool[key]].awareness,
+          interest: surveyResults[newTool[key]].interest,
+          satisfaction: surveyResults[newTool[key]].satisfaction,
+          total: surveyResults[newTool[key]].total
+        }
+      });
+    }
+  };
+
   return (
     <div className="App" style={{ ...appStyle }}>
       <Header title="The State of Javascript 2019" />
       <div style={{ ...mainChartStyle }}>
-        <AreaChart
-          width={800}
-          height={400}
+        <BarChart
+          width={600}
+          height={300}
           data={data}
-          margin={{
-            top: 30,
-            right: 30,
-            left: 30,
-            bottom: 10
-          }}
+          margin={{ top: 25, right: 20, bottom: 5, left: 0 }}
         >
-          <Legend verticalAlign="top" height={36}/>
           <CartesianGrid strokeDasharray="3 3" />
           <XAxis dataKey="name" />
-          <YAxis label={{ value: '%', angle: -90, position: 'insideLeft'}} />
+          <YAxis />
           <Tooltip />
-          <Area
-            type="monotone"
-            dataKey="awareness"
-            stackId="1"
-            stroke="#8884d8"
-            fill="#8884d8"
-          />
-          <Area
-            type="monotone"
-            dataKey="interest"
-            stackId="1"
-            stroke="#82ca9d"
-            fill="#82ca9d"
-          />
-          <Area
-            type="monotone"
-            dataKey="satisfaction"
-            stackId="1"
-            stroke="#ffc658"
-            fill="#ffc658"
-          />
-        </AreaChart>
-        <Text>Fig.1 - Overall results</Text>
+          <Bar dataKey="val" fill="#8884d8" />
+        </BarChart>
       </div>
+
       <TextBlock style={{ ...textBlockStyle }}>
         The State of Javascript survey collected responses from over 22,000
         developers in 2019. Participants were asked a series of questions about
@@ -182,8 +209,6 @@ const linkStyle = {
 };
 
 const mainChartStyle = {
-  paddingTop: 50,
-  paddingBottom: 50,
   margin: "0 auto"
 };
 

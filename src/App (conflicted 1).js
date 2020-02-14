@@ -9,7 +9,6 @@ import {
   CartesianGrid,
   XAxis,
   YAxis,
-  Text,
   Tooltip,
   Legend
 } from "recharts";
@@ -103,6 +102,7 @@ function App() {
     <div className="App" style={{ ...appStyle }}>
       <Header title="The State of Javascript 2019" />
       <div style={{ ...mainChartStyle }}>
+        {" "}
         <AreaChart
           width={800}
           height={400}
@@ -111,13 +111,12 @@ function App() {
             top: 30,
             right: 30,
             left: 30,
-            bottom: 10
+            bottom: 50
           }}
         >
-          <Legend verticalAlign="top" height={36}/>
           <CartesianGrid strokeDasharray="3 3" />
-          <XAxis dataKey="name" />
-          <YAxis label={{ value: '%', angle: -90, position: 'insideLeft'}} />
+          <XAxis label={{ value: 'Framework/Tool', position: 'insideBottom' }} dataKey="name" />
+          <YAxis label={{ value: '%age of respondents', angle: -90, position: 'insideLeft' }} />
           <Tooltip />
           <Area
             type="monotone"
@@ -141,7 +140,6 @@ function App() {
             fill="#ffc658"
           />
         </AreaChart>
-        <Text>Fig.1 - Overall results</Text>
       </div>
       <TextBlock style={{ ...textBlockStyle }}>
         The State of Javascript survey collected responses from over 22,000
@@ -182,8 +180,6 @@ const linkStyle = {
 };
 
 const mainChartStyle = {
-  paddingTop: 50,
-  paddingBottom: 50,
   margin: "0 auto"
 };
 

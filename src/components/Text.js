@@ -13,7 +13,7 @@ const textStyle = {
 };
 
 const contentStyle = {
-  fontSize: 16
+  fontSize: 10
 };
 
 export default Text;

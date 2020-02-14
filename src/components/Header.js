@@ -10,8 +10,8 @@ const Header = props => {
 
 const headerStyle = {
  display: "flex",
- color: "white",
- backgroundColor: "#5b8c85"
+ color: "#323330",
+ backgroundColor: "#F0DB4F"
 };
 const titleStyle = {
   margin: "auto",

@@ -9,11 +9,10 @@ const TextBlock = props => {
 };
 
 const textBlockStyle = {
-  display: "flex",
-  justifyContent: "center",
   margin: 10,
   backgroundColor: "white",
-  color: "#555"
+  color: "#555",
+  textAlign: 'left'
 };
 
 export default TextBlock;
