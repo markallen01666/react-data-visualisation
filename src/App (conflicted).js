@@ -4,172 +4,129 @@
 
 import React, { useState } from "react";
 import {
-  BarChart,
-  Bar,
+  AreaChart,
+  Area,
   CartesianGrid,
   XAxis,
   YAxis,
+  Text,
   Tooltip,
   Legend
 } from "recharts";
 
-import Card from "./components/Card";
 import Header from "./components/Header";
 import TextBlock from "./components/TextBlock";
 import "./App.css";
 
-// chart data
-const data = [
-  { name: "A", val: 400 },
-  { name: "B", val: 350 },
-  { name: "C", val: 200 },
-  { name: "D", val: 225 },
-  { name: "E", val: 375 }
-];
+// framework/tool list
+const toolList = ["react", "angular", "vuejs", "jest", "reactnative"];
 
-// read and process survey results
-let toolList = ["react", "angular", "vuejs", "jest", "reactnative"];
-let surveyResults = {
-  none: {
-    total: 0,
-    awareness: 0,
-    interest: 0,
-    satisfaction: 0
-  }
+// build and run query
+const queryResults = async _ => {
+  // survey data
+  let surveyData = [];
+  for (let i = 0; i < toolList.length; i++) {
+    let query = `
+            query {
+              survey(survey: js) {
+                tool(id: ${toolList[i]}) {
+                  id
+                  experience {
+                    allYears{
+                      year
+                      total
+                      awarenessInterestSatisfaction {
+                        awareness
+                        interest
+                        satisfaction
+                      }
+                    }
+                  }
+                }
+              }
+            }`;
+    const url = "https://api.stateofjs.com/graphql";
+    const opts = {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ query })
+    };
+    // execute query
+    fetch(url, opts)
+      .then(res => res.json())
+      .then(resJSON => {
+        // extract required data
+        surveyData.push({
+          name: resJSON.data.survey.tool.id,
+          awareness:
+            resJSON.data.survey.tool.experience.allYears["3"]
+              .awarenessInterestSatisfaction.awareness,
+          interest:
+            resJSON.data.survey.tool.experience.allYears["3"]
+              .awarenessInterestSatisfaction.interest,
+          satisfaction:
+            resJSON.data.survey.tool.experience.allYears["3"]
+              .awarenessInterestSatisfaction.satisfaction
+        });
+      })
+      .catch(console.error);
+  } // -- end of read and process survey results --
+  return surveyData;
 };
 
-for (let i = 0; i < toolList.length; i++) {
-  // build query
-  let query = `
-  query {
-    survey(survey: js) {
-      tool(id: ${toolList[i]}) {
-        id
-        experience {
-          allYears{
-            year
-            total
-            awarenessInterestSatisfaction {
-              awareness
-              interest
-              satisfaction
-            }
-          }
-        }
-      }
-    }
-  }`;
+// Load data
+let data = [];
+queryResults().then(res => {
+  return res;
+});
 
-  // execute query
-  const url = "https://api.stateofjs.com/graphql";
-  const opts = {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ query })
-  };
-  fetch(url, opts)
-    .then(res => res.json())
-    .then(resJSON => {
-      // extract required data into surveyResults
-      surveyResults[resJSON.data.survey.tool.id] = {
-        total: resJSON.data.survey.tool.experience.allYears["3"].total,
-        awareness:
-          resJSON.data.survey.tool.experience.allYears["3"]
-            .awarenessInterestSatisfaction.awareness,
-        interest:
-          resJSON.data.survey.tool.experience.allYears["3"]
-            .awarenessInterestSatisfaction.interest,
-        satisfaction:
-          resJSON.data.survey.tool.experience.allYears["3"]
-            .awarenessInterestSatisfaction.satisfaction
-      };
-    })
-    .catch(console.error);
-} // -- end of read and process survey results --
+console.log(data);
 
 function App() {
-  // responsive sizing
-  const [width, setWidth] = useState(window.innerWidth);
-  const [height, setHeight] = React.useState(window.innerHeight);
-
-  const updateWidthAndHeight = () => {
-    setWidth(window.innerWidth);
-    setHeight(window.innerHeight);
-    if (width < 400) {
-      textBlockStyle["fontSize"] = 8;
-    } else if (width < 600) {
-      textBlockStyle["fontSize"] = 10;
-    } else {
-      textBlockStyle["fontSize"] = 16;
-    }
-  };
-
-  // values displayed in cards
-  const [displayData, setdisplayData] = useState({
-    card1: {
-      tool: "none",
-      awareness: 0,
-      interest: 0,
-      satisfaction: 0,
-      total: 0
-    },
-    card2: {
-      tool: "none",
-      awareness: 0,
-      interest: 0,
-      satisfaction: 0,
-      total: 0
-    },
-    card3: {
-      tool: "none",
-      awareness: 0,
-      interest: 0,
-      satisfaction: 0,
-      total: 0
-    },
-    card4: {
-      tool: "none",
-      awareness: 0,
-      interest: 0,
-      satisfaction: 0,
-      total: 0
-    }
-  });
-
-  // change displayed values based on Picker choice
-  const changeDisplayHandler = newTool => {
-    for (let key in newTool) {
-      setdisplayData({
-        ...displayData,
-        [key]: {
-          tool: newTool[key],
-          awareness: surveyResults[newTool[key]].awareness,
-          interest: surveyResults[newTool[key]].interest,
-          satisfaction: surveyResults[newTool[key]].satisfaction,
-          total: surveyResults[newTool[key]].total
-        }
-      });
-    }
-  };
-
   return (
     <div className="App" style={{ ...appStyle }}>
       <Header title="The State of Javascript 2019" />
       <div style={{ ...mainChartStyle }}>
-        <BarChart
-          width={600}
-          height={300}
+        <AreaChart
+          width={800}
+          height={400}
           data={data}
-          margin={{ top: 25, right: 20, bottom: 5, left: 0 }}
+          margin={{
+            top: 30,
+            right: 30,
+            left: 30,
+            bottom: 10
+          }}
         >
+          <Legend verticalAlign="top" height={36} />
           <CartesianGrid strokeDasharray="3 3" />
           <XAxis dataKey="name" />
-          <YAxis />
+          <YAxis label={{ value: "%", angle: -90, position: "insideLeft" }} />
           <Tooltip />
-          <Bar dataKey="val" fill="#8884d8" />
-        </BarChart>
+          <Area
+            type="monotone"
+            dataKey="awareness"
+            stackId="1"
+            stroke="#8884d8"
+            fill="#8884d8"
+          />
+          <Area
+            type="monotone"
+            dataKey="interest"
+            stackId="1"
+            stroke="#82ca9d"
+            fill="#82ca9d"
+          />
+          <Area
+            type="monotone"
+            dataKey="satisfaction"
+            stackId="1"
+            stroke="#ffc658"
+            fill="#ffc658"
+          />
+        </AreaChart>
+        <Text>Fig.1 - Overall results</Text>
       </div>
-
       <TextBlock style={{ ...textBlockStyle }}>
         The State of Javascript survey collected responses from over 22,000
         developers in 2019. Participants were asked a series of questions about
@@ -209,6 +166,8 @@ const linkStyle = {
 };
 
 const mainChartStyle = {
+  paddingTop: 50,
+  paddingBottom: 50,
   margin: "0 auto"
 };
 

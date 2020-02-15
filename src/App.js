@@ -2,7 +2,7 @@
    M Allen - 2020
 */
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import {
   AreaChart,
   Area,
@@ -18,86 +18,69 @@ import Header from "./components/Header";
 import TextBlock from "./components/TextBlock";
 import "./App.css";
 
-// read and process survey results
-let toolList = ["react", "angular", "vuejs", "jest", "reactnative"];
-// chart data
-let data = [
-  { name: "React", awareness: 100, interest: 60.8, satisfaction: 89.3 },
-  { name: "Vue", awareness: 99.6, interest: 64.3, satisfaction: 87.1 },
-  { name: "Angular", awareness: 99.8, interest: 23.1, satisfaction: 38 },
-  { name: "Jest", awareness: 91.5, interest: 81.6, satisfaction: 96.4 },
-  { name: "React Native", awareness: 98.5, interest: 67.8, satisfaction: 82.1 }
-];
-// areaChart
-let areaChart;
+// framework/tool list
+const toolList = ["react", "angular", "vuejs", "jest", "reactnative"];
 
-for (let i = 0; i < toolList.length; i++) {
-  // build query
-  let query = `
-  query {
-    survey(survey: js) {
-      tool(id: ${toolList[i]}) {
-        id
-        experience {
-          allYears{
-            year
-            total
-            awarenessInterestSatisfaction {
-              awareness
-              interest
-              satisfaction
-            }
-          }
-        }
-      }
-    }
-  }`;
-
-  // execute query
-  const url = "https://api.stateofjs.com/graphql";
-  const opts = {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ query })
-  };
-  fetch(url, opts)
-    .then(res => res.json())
-    .then(resJSON => {
-      // extract required data
-      data.push({
-        name: resJSON.data.survey.tool.id,
-        awareness:
-          resJSON.data.survey.tool.experience.allYears["3"]
-            .awarenessInterestSatisfaction.awareness,
-        interest:
-          resJSON.data.survey.tool.experience.allYears["3"]
-            .awarenessInterestSatisfaction.interest,
-        satisfaction:
-          resJSON.data.survey.tool.experience.allYears["3"]
-            .awarenessInterestSatisfaction.satisfaction
-      });
-    })
-    .catch(console.error);
-} // -- end of read and process survey results --
-
-console.log(data);
+// build and run query
+const queryResults = async _ => {
+  // survey data
+  let surveyData = [];
+  for (let i = 0; i < toolList.length; i++) {
+    let query = `
+            query {
+              survey(survey: js) {
+                tool(id: ${toolList[i]}) {
+                  id
+                  experience {
+                    allYears{
+                      year
+                      total
+                      awarenessInterestSatisfaction {
+                        awareness
+                        interest
+                        satisfaction
+                      }
+                    }
+                  }
+                }
+              }
+            }`;
+    const url = "https://api.stateofjs.com/graphql";
+    const opts = {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ query })
+    };
+    // execute query
+    fetch(url, opts)
+      .then(res => res.json())
+      .then(resJSON => {
+        // extract required data
+        surveyData.push({
+          name: resJSON.data.survey.tool.id,
+          awareness:
+            resJSON.data.survey.tool.experience.allYears["3"]
+              .awarenessInterestSatisfaction.awareness,
+          interest:
+            resJSON.data.survey.tool.experience.allYears["3"]
+              .awarenessInterestSatisfaction.interest,
+          satisfaction:
+            resJSON.data.survey.tool.experience.allYears["3"]
+              .awarenessInterestSatisfaction.satisfaction
+        });
+      })
+      .catch(console.error);
+  } // -- end of read and process survey results --
+  return surveyData;
+};
 
 function App() {
-  // responsive sizing
-  const [width, setWidth] = useState(window.innerWidth);
-  const [height, setHeight] = React.useState(window.innerHeight);
+  const [data, setData] = useState([]);
 
-  const updateWidthAndHeight = () => {
-    setWidth(window.innerWidth);
-    setHeight(window.innerHeight);
-    if (width < 400) {
-      textBlockStyle["fontSize"] = 8;
-    } else if (width < 600) {
-      textBlockStyle["fontSize"] = 10;
-    } else {
-      textBlockStyle["fontSize"] = 16;
-    }
-  };
+  useEffect(async () => {
+    const result = await queryResults();
+    setData(result.data);
+  });
 
   return (
     <div className="App" style={{ ...appStyle }}>
@@ -114,10 +97,10 @@ function App() {
             bottom: 10
           }}
         >
-          <Legend verticalAlign="top" height={36}/>
+          <Legend verticalAlign="top" height={36} />
           <CartesianGrid strokeDasharray="3 3" />
           <XAxis dataKey="name" />
-          <YAxis label={{ value: '%', angle: -90, position: 'insideLeft'}} />
+          <YAxis label={{ value: "%", angle: -90, position: "insideLeft" }} />
           <Tooltip />
           <Area
             type="monotone"
