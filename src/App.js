@@ -21,66 +21,81 @@ import "./App.css";
 // framework/tool list
 const toolList = ["react", "angular", "vuejs", "jest", "reactnative"];
 
-// build and run query
-const queryResults = async _ => {
-  // survey data
-  let surveyData = [];
-  for (let i = 0; i < toolList.length; i++) {
-    let query = `
-            query {
-              survey(survey: js) {
-                tool(id: ${toolList[i]}) {
-                  id
-                  experience {
-                    allYears{
-                      year
-                      total
-                      awarenessInterestSatisfaction {
-                        awareness
-                        interest
-                        satisfaction
-                      }
+function App() {
+  const [data, setData] = useState([]);
+
+  // build and run query on component mount
+  useEffect(() => {
+    const fetchData = async () => {
+      const url = "https://api.stateofjs.com/graphql";
+      let interimArray = [
+        {
+          name: "best",
+          awareness: 84,
+          interest: 50.7,
+          satisfaction: 45
+        },
+        {
+          name: "test",
+          awareness: 75,
+          interest: 40.8,
+          satisfaction: 39.3
+        }
+      ];
+      for (let i = 0; i < toolList.length; i++) {
+        let query = `
+          query {
+            survey(survey: js) {
+              tool(id: ${toolList[i]}) {
+                id
+                experience {
+                  allYears{
+                    year
+                    total
+                    awarenessInterestSatisfaction {
+                      awareness
+                      interest
+                      satisfaction
                     }
                   }
                 }
               }
-            }`;
-    const url = "https://api.stateofjs.com/graphql";
-    const opts = {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ query })
+            }
+          }`;
+        const opts = {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ query })
+        };
+        // execute query
+        fetch(url, opts)
+          .then(res => res.json())
+          .then(resJSON => {
+            // extract required data
+            interimArray.push({
+              name: resJSON.data.survey.tool.id,
+              awareness: parseFloat(
+                resJSON.data.survey.tool.experience.allYears["3"]
+                  .awarenessInterestSatisfaction.awareness
+              ),
+              interest: parseFloat(
+                resJSON.data.survey.tool.experience.allYears["3"]
+                  .awarenessInterestSatisfaction.interest
+              ),
+              satisfaction: parseFloat(
+                resJSON.data.survey.tool.experience.allYears["3"]
+                  .awarenessInterestSatisfaction.satisfaction
+              )
+            });
+          })
+          .catch(console.error);
+      } // -- end of read and process survey results --
+      return interimArray;
     };
-    // execute query
-    fetch(url, opts)
-      .then(res => res.json())
-      .then(resJSON => {
-        // extract required data
-        surveyData.push({
-          name: resJSON.data.survey.tool.id,
-          awareness:
-            resJSON.data.survey.tool.experience.allYears["3"]
-              .awarenessInterestSatisfaction.awareness,
-          interest:
-            resJSON.data.survey.tool.experience.allYears["3"]
-              .awarenessInterestSatisfaction.interest,
-          satisfaction:
-            resJSON.data.survey.tool.experience.allYears["3"]
-              .awarenessInterestSatisfaction.satisfaction
-        });
-      })
-      .catch(console.error);
-  } // -- end of read and process survey results --
-  return surveyData;
-};
-
-function App() {
-  const [data, setData] = useState([]);
-
-  useEffect(async () => {
-    const result = await queryResults();
-    setData(result.data);
-  });
+    fetchData().then(res => {
+      setData([...res]);     
+    });
+  }, []);
 
   return (
     <div className="App" style={{ ...appStyle }}>
@@ -157,11 +172,6 @@ const appStyle = {
   flexDirection: "column",
   flex: 1,
   maxWidth: "100%"
-};
-
-const linkStyle = {
-  color: "#555",
-  padding: 20
 };
 
 const mainChartStyle = {
