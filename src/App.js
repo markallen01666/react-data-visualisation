@@ -2,7 +2,7 @@
    M Allen - 2020
 */
 
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
 import {
   AreaChart,
   Area,
@@ -18,84 +18,39 @@ import Header from "./components/Header";
 import TextBlock from "./components/TextBlock";
 import "./App.css";
 
-// framework/tool list
-const toolList = ["react", "angular", "vuejs", "jest", "reactnative"];
-
 function App() {
-  const [data, setData] = useState([]);
-
-  // build and run query on component mount
-  useEffect(() => {
-    const fetchData = async () => {
-      const url = "https://api.stateofjs.com/graphql";
-      let interimArray = [
-        {
-          name: "best",
-          awareness: 84,
-          interest: 50.7,
-          satisfaction: 45
-        },
-        {
-          name: "test",
-          awareness: 75,
-          interest: 40.8,
-          satisfaction: 39.3
-        }
-      ];
-      for (let i = 0; i < toolList.length; i++) {
-        let query = `
-          query {
-            survey(survey: js) {
-              tool(id: ${toolList[i]}) {
-                id
-                experience {
-                  allYears{
-                    year
-                    total
-                    awarenessInterestSatisfaction {
-                      awareness
-                      interest
-                      satisfaction
-                    }
-                  }
-                }
-              }
-            }
-          }`;
-        const opts = {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ query })
-        };
-        // execute query
-        fetch(url, opts)
-          .then(res => res.json())
-          .then(resJSON => {
-            // extract required data
-            interimArray.push({
-              name: resJSON.data.survey.tool.id,
-              awareness: parseFloat(
-                resJSON.data.survey.tool.experience.allYears["3"]
-                  .awarenessInterestSatisfaction.awareness
-              ),
-              interest: parseFloat(
-                resJSON.data.survey.tool.experience.allYears["3"]
-                  .awarenessInterestSatisfaction.interest
-              ),
-              satisfaction: parseFloat(
-                resJSON.data.survey.tool.experience.allYears["3"]
-                  .awarenessInterestSatisfaction.satisfaction
-              )
-            });
-          })
-          .catch(console.error);
-      } // -- end of read and process survey results --
-      return interimArray;
-    };
-    fetchData().then(res => {
-      setData([...res]);     
-    });
-  }, []);
+  const [data, setData] = useState([
+    {
+      name: "React",
+      awareness: 100,
+      interest: 60.8,
+      satisfaction: 89.3
+    },
+    {
+      name: "Angular",
+      awareness: 99.8,
+      interest: 23.1,
+      satisfaction: 38
+    },
+    {
+      name: "Vue JS",
+      awareness: 99.6,
+      interest: 64.3,
+      satisfaction: 87.1
+    },
+    {
+      name: "Jest",
+      awareness: 91.5,
+      interest: 81.6,
+      satisfaction: 96.4
+    },
+    {
+      name: "React Native",
+      awareness: 98.5,
+      interest: 67.8,
+      satisfaction: 82.1
+    }
+  ]);
 
   return (
     <div className="App" style={{ ...appStyle }}>
@@ -142,12 +97,12 @@ function App() {
         <Text>Fig.1 - Overall results</Text>
       </div>
       <TextBlock style={{ ...textBlockStyle }}>
-        The State of Javascript survey collected responses from over 22,000
-        developers in 2019. Participants were asked a series of questions about
-        different aspects of JavaScript, including front and back-end
-        frameworks, ES6, mobile development, and testing. The final results are
-        summarised in a report and changes from previous surveys analysed and
-        visualised using a variety of tools.{" "}
+        This app uses data taken from The State of Javascript survey which
+        collected responses from over 22,000 developers in 2019. Participants
+        were asked a series of questions about different aspects of JavaScript,
+        including front and back-end frameworks, ES6, mobile development, and
+        testing. The final results are summarised in a report and changes from
+        previous surveys analysed and visualised using a variety of tools.{" "}
         <span>
           Full results are available at the{" "}
           <a href={"https://2019.stateofjs.com/"}>
