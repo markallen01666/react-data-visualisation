@@ -1,8 +1,8 @@
-/* Using React and a GraphQL query to display survey data
+/* Using React and Recharts to visualise survey data
    M Allen - 2020
 */
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import {
   AreaChart,
   Area,
@@ -18,7 +18,6 @@ import {
   PolarRadiusAxis,
   Radar,
   RadarChart,
-  Sector,
   Tooltip,
   XAxis,
   YAxis
@@ -28,7 +27,60 @@ import Header from "./components/Header";
 import TextBlock from "./components/TextBlock";
 import "./App.css";
 
+// Pie chart code block taken from recharts.org example
+const COLORS = ["#0088FE", "#00C49F", "#FFBB28", "#FF8042"];
+
+const RADIAN = Math.PI / 180;
+const renderCustomizedLabel = ({
+  cx,
+  cy,
+  midAngle,
+  innerRadius,
+  outerRadius,
+  percent,
+  index
+}) => {
+  const radius = innerRadius + (outerRadius - innerRadius) * 0.5;
+  const x = cx + radius * Math.cos(-midAngle * RADIAN);
+  const y = cy + radius * Math.sin(-midAngle * RADIAN);
+
+  return (
+    <text
+      x={x}
+      y={y}
+      fill="white"
+      textAnchor={x > cx ? "start" : "end"}
+      dominantBaseline="central"
+    >
+      {`${(percent * 100).toFixed(0)}%`}
+    </text>
+  );
+};
+// end of recharts.org example code block
+
 function App() {
+  // responsive sizing
+  const [width, setWidth] = useState(window.innerWidth);
+  const [height, setHeight] = React.useState(window.innerHeight);
+
+  const updateWidthAndHeight = () => {
+    setWidth(window.innerWidth);
+    setHeight(window.innerHeight);
+    if (width < 400) {
+      textBlockStyle["fontSize"] = 8;
+    } else if (width < 600) {
+      textBlockStyle["fontSize"] = 10;
+    } else {
+      textBlockStyle["fontSize"] = 12;
+    }
+  };
+
+  useEffect(() => {
+    window.addEventListener("resize", updateWidthAndHeight);
+    return () => window.removeEventListener("resize", updateWidthAndHeight);
+  });
+
+  // data to use - sourced from the State of Javascript 2019 survey
   const [data, setData] = useState([
     {
       name: "Angular",
@@ -97,8 +149,8 @@ function App() {
       <Header title="The State of Javascript 2019" />
       <div style={{ ...mainChartStyle }}>
         <AreaChart
-          width={800}
-          height={400}
+          width={width * (3 / 4)}
+          height={width * (1.5 / 4)}
           data={data}
           margin={{
             top: 30,
@@ -138,8 +190,8 @@ function App() {
       </div>
       <div style={{ ...mainChartStyle }}>
         <BarChart
-          width={800}
-          height={400}
+          width={width * (3 / 4)}
+          height={width * (1.5 / 4)}
           data={data}
           margin={{
             top: 30,
@@ -157,13 +209,13 @@ function App() {
         <p>Fig.2 - Satisfaction %</p>
       </div>
       <div style={{ ...mainChartStyle }}>
-        <PieChart width={450} height={450}>
+        <PieChart width={width * (3 / 4)} height={width * (1.5 / 4)}>
           <Pie
             data={data}
             dataKey="awareness"
-            cx={225}
-            cy={225}
-            outerRadius={200}
+            cx={width * (1.5 / 4)}
+            cy={width * (0.75 / 4)}
+            outerRadius={width * (0.6 / 4)}
             fill="#e58e26"
           />
           <Tooltip />
@@ -172,11 +224,11 @@ function App() {
       </div>
       <div style={{ ...mainChartStyle }}>
         <RadarChart
-          cx={300}
-          cy={300}
-          outerRadius={200}
-          width={600}
-          height={600}
+          cx={width * (1.5 / 4)}
+          cy={width * (0.75 / 4)}
+          outerRadius={width * (0.6 / 4)}
+          width={width * (3 / 4)}
+          height={width * (1.5 / 4)}
           data={data}
         >
           <PolarGrid />
@@ -203,10 +255,32 @@ function App() {
             fill="#eb2f06"
             fillOpacity={0.5}
           />
-          <Legend />
           <Tooltip />
         </RadarChart>
-        <p>Fig. 4 - Awareness %</p>
+        <p>Fig. 4 - Radar %</p>
+      </div>
+      <div style={{ ...mainChartStyle }}>
+        <PieChart width={width * (3 / 4)} height={width * (1.5 / 4)}>
+          <Pie
+            data={data}
+            cx={width * (1.5 / 4)}
+            cy={width * (0.75 / 4)}
+            labelLine={false}
+            label={renderCustomizedLabel}
+            outerRadius={width * (0.6 / 4)}
+            fill="#8884d8"
+            dataKey="interest"
+          >
+            {data.map((entry, index) => (
+              <Cell
+                key={`cell-${index}`}
+                fill={COLORS[index % COLORS.length]}
+              />
+            ))}
+          </Pie>
+          <Tooltip />
+        </PieChart>
+        <p>Fig. 5 - Relative interest levels</p>
       </div>
       <TextBlock style={{ ...textBlockStyle }}>
         This app uses data taken from The State of Javascript survey which
