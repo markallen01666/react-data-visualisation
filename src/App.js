@@ -6,12 +6,22 @@ import React, { useState } from "react";
 import {
   AreaChart,
   Area,
+  BarChart,
+  Bar,
   CartesianGrid,
-  XAxis,
-  YAxis,
-  Text,
+  Cell,
+  Legend,
+  Pie,
+  PieChart,
+  PolarGrid,
+  PolarAngleAxis,
+  PolarRadiusAxis,
+  Radar,
+  RadarChart,
+  Sector,
   Tooltip,
-  Legend
+  XAxis,
+  YAxis
 } from "recharts";
 
 import Header from "./components/Header";
@@ -21,22 +31,34 @@ import "./App.css";
 function App() {
   const [data, setData] = useState([
     {
-      name: "React",
-      awareness: 100,
-      interest: 60.8,
-      satisfaction: 89.3
-    },
-    {
       name: "Angular",
       awareness: 99.8,
       interest: 23.1,
       satisfaction: 38
     },
     {
-      name: "Vue JS",
-      awareness: 99.6,
-      interest: 64.3,
-      satisfaction: 87.1
+      name: "Cordova",
+      awareness: 81.4,
+      interest: 20.6,
+      satisfaction: 28
+    },
+    {
+      name: "Ember",
+      awareness: 90.9,
+      interest: 18.1,
+      satisfaction: 30.5
+    },
+    {
+      name: "Expo",
+      awareness: 38.6,
+      interest: 43.9,
+      satisfaction: 73.8
+    },
+    {
+      name: "Express",
+      awareness: 95.6,
+      interest: 66,
+      satisfaction: 92.6
     },
     {
       name: "Jest",
@@ -45,10 +67,28 @@ function App() {
       satisfaction: 96.4
     },
     {
-      name: "React Native",
-      awareness: 98.5,
-      interest: 67.8,
-      satisfaction: 82.1
+      name: "React",
+      awareness: 100,
+      interest: 60.8,
+      satisfaction: 89.3
+    },
+    {
+      name: "Redux",
+      awareness: 97.4,
+      interest: 61.8,
+      satisfaction: 70.7
+    },
+    {
+      name: "Typescript",
+      awareness: 99.7,
+      interest: 65.6,
+      satisfaction: 88.9
+    },
+    {
+      name: "Vue JS",
+      awareness: 99.6,
+      interest: 64.3,
+      satisfaction: 87.1
     }
   ]);
 
@@ -76,25 +116,97 @@ function App() {
             type="monotone"
             dataKey="awareness"
             stackId="1"
-            stroke="#8884d8"
-            fill="#8884d8"
+            stroke="#f6b93b"
+            fill="#f6b93b"
           />
           <Area
             type="monotone"
             dataKey="interest"
             stackId="1"
-            stroke="#82ca9d"
-            fill="#82ca9d"
+            stroke="#e55039"
+            fill="#e55039"
           />
           <Area
             type="monotone"
             dataKey="satisfaction"
             stackId="1"
-            stroke="#ffc658"
-            fill="#ffc658"
+            stroke="#1e3799"
+            fill="#1e3799"
           />
         </AreaChart>
-        <Text>Fig.1 - Overall results</Text>
+        <p>Fig.1 - Overall results</p>
+      </div>
+      <div style={{ ...mainChartStyle }}>
+        <BarChart
+          width={800}
+          height={400}
+          data={data}
+          margin={{
+            top: 30,
+            right: 30,
+            left: 30,
+            bottom: 10
+          }}
+        >
+          <CartesianGrid strokeDasharray="3 3" />
+          <XAxis dataKey="name" />
+          <YAxis label={{ value: "%", angle: -90, position: "insideLeft" }} />
+          <Bar dataKey="satisfaction" fill="#b71540" />
+          <Tooltip />
+        </BarChart>
+        <p>Fig.2 - Satisfaction %</p>
+      </div>
+      <div style={{ ...mainChartStyle }}>
+        <PieChart width={450} height={450}>
+          <Pie
+            data={data}
+            dataKey="awareness"
+            cx={225}
+            cy={225}
+            outerRadius={200}
+            fill="#e58e26"
+          />
+          <Tooltip />
+        </PieChart>
+        <p>Fig. 3 - Awareness %</p>
+      </div>
+      <div style={{ ...mainChartStyle }}>
+        <RadarChart
+          cx={300}
+          cy={300}
+          outerRadius={200}
+          width={600}
+          height={600}
+          data={data}
+        >
+          <PolarGrid />
+          <PolarAngleAxis dataKey="name" />
+          <PolarRadiusAxis angle={30} domain={[0, 150]} />
+          <Radar
+            name="Awareness"
+            dataKey="awareness"
+            stroke="#1e3799"
+            fill="#1e3799"
+            fillOpacity={0.5}
+          />
+          <Radar
+            name="Interest"
+            dataKey="interest"
+            stroke="#f6b93b"
+            fill="#f6b93b"
+            fillOpacity={0.9}
+          />
+          <Radar
+            name="Satisfaction"
+            dataKey="satisfaction"
+            stroke="#eb2f06"
+            fill="#eb2f06"
+            fillOpacity={0.5}
+          />
+          <Legend />
+          <Tooltip />
+        </RadarChart>
+        <p>Fig. 4 - Awareness %</p>
       </div>
       <TextBlock style={{ ...textBlockStyle }}>
         This app uses data taken from The State of Javascript survey which
@@ -132,7 +244,7 @@ const appStyle = {
 const mainChartStyle = {
   paddingTop: 50,
   paddingBottom: 50,
-  margin: "0 auto"
+  margin: "auto"
 };
 
 let textBlockStyle = {
